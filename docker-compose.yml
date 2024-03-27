@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:7.0.7
+    restart: always
+    command: 
+      - --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root  # create a superuser with this name and password
+      MONGO_INITDB_ROOT_PASSWORD: NTI4MC16YmlueHAt
+      MONGO_INITDB_DATABASE: genai_users
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./src/config/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js  # Mount your init script as a volume
+    networks: 
+      - app-network  
+  app:
+    build: .  # Build the image from the current directory (adjust if Dockerfile is elsewhere)
+    ports:
+      - "3000:3000"  # Map container port to host port for your application
+    depends_on:
+      - mongo  # Ensure MongoDB starts before the application
+    volumes:
+      - ./src:/usr/src/app/src  # Mount your application code directory as a volume
+    environment:
+      # genai_user and password are created in mongo-init.js
+      MONGO_URI: mongodb://nanono:nanono123@mongo:27017/genai_users
+    networks: 
+      - app-network
+networks:
+  app-network:
+    driver: bridge        
